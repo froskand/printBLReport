@@ -1,0 +1,63 @@
+Sub ButtonPrint_Click()
+    Dim strPDFFileName As String
+    Dim strDocID As String
+    Dim strDocRev As String
+    Dim fso As Object
+    Dim wsBaseline As Worksheet
+    
+    On Error GoTo Failure
+    
+    ' Get document information
+    With ThisWorkbook.Worksheets("Introduction")
+        strDocID = .Range("C5").Value
+        strDocRev = .Range("C6").Value
+    End With
+    
+    ' Build PDF filename
+    strPDFFileName = Application.ActiveWorkbook.Path & "\" & strDocID & " rev " & strDocRev & " BaselineReport.pdf"
+    
+    ' Check if file already exists
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    If fso.FileExists(strPDFFileName) Then
+        If MsgBox("A file with this name already exists:" & Chr(13) & Chr(13) & _
+                  strPDFFileName & Chr(13) & Chr(13) & _
+                  "Do you want to overwrite it?", vbYesNo + vbExclamation, "File Exists") = vbNo Then
+            MsgBox "PDF save cancelled.", vbInformation, "Cancelled"
+            GoTo Done
+        End If
+    End If
+    
+    ' Confirm save
+    If MsgBox("Do you want to save the baseline document as a PDF?" & Chr(13) & Chr(13) & _
+              "Saving as: " & strPDFFileName & Chr(13) & _
+              "Path length: " & Len(strPDFFileName) & " characters", vbOKCancel + vbQuestion, "Save PDF") = vbCancel Then
+        GoTo Done
+    End If
+    
+    ' Set up repeating rows for Baseline content sheet
+    Set wsBaseline = ThisWorkbook.Worksheets("Baseline content")
+    With wsBaseline.PageSetup
+        .PrintTitleRows = "$1:$4"  ' Change this to match your header row(s), e.g., "$1:$2" for rows 1-2
+    End With
+    
+    ' Export selected sheets to PDF
+    ThisWorkbook.Sheets(Array("Introduction", "Review", "Baseline content", "Change tracking")).Select
+    ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=strPDFFileName
+    
+    ' Verify file was created
+    If Not fso.FileExists(strPDFFileName) Then
+        MsgBox "Error: PDF file was not saved successfully!" & Chr(13) & Chr(13) & _
+               "Expected location: " & strPDFFileName, vbCritical, "Save Failed"
+    Else
+        MsgBox "PDF saved successfully!" & Chr(13) & Chr(13) & strPDFFileName, vbInformation, "Success"
+    End If
+    
+Done:
+    ThisWorkbook.Sheets("Introduction").Select
+    Exit Sub
+    
+Failure:
+    MsgBox "Failed to save PDF: " & Err.Description, vbCritical, "Error"
+    ThisWorkbook.Sheets("Introduction").Select
+End Sub
+
