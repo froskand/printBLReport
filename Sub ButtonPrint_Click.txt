@@ -14,6 +14,14 @@ Sub ButtonPrint_Click()
         strDocRev = .Range("C6").Value
     End With
     
+    ' Validate that revision number exists
+    If strDocRev = "" Or IsEmpty(strDocRev) Or IsNull(strDocRev) Then
+        MsgBox "Error: No revision number found!" & Chr(13) & Chr(13) & _
+               "Please enter a revision number in cell C6 of the Introduction sheet.", _
+               vbCritical, "Missing Revision Number"
+        GoTo Done
+    End If
+    
     ' Build PDF filename
     strPDFFileName = Application.ActiveWorkbook.Path & "\" & strDocID & " rev " & strDocRev & " BaselineReport.pdf"
     
@@ -66,3 +74,4 @@ Failure:
     MsgBox "Failed to save PDF: " & Err.Description, vbCritical, "Error"
     ThisWorkbook.Sheets("Introduction").Select
 End Sub
+
