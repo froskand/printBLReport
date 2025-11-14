@@ -1,0 +1,32 @@
+Sub ButtonPrint_Click()
+    Dim strPDFFileName As String
+    Dim strDocID As String
+    Dim strDeliverable As String
+    
+    On Error GoTo Failure
+    
+    ThisWorkbook.Sheets(Array("Introduction", "Review", "Baseline content", "Change tracking")).Select
+    
+    strDocID = ThisWorkbook.Worksheets("Introduction").Range("C5").Value
+    strDeliverable = CStr(ThisWorkbook.Worksheets("Introduction").Range("C5").Value)
+    
+    'strPDFFileName = Application.ActiveWorkbook.Path & "/" & strDocID & " Baseline " & strDeliverable & ".pdf"
+    
+    'Remark: For some reason the filename length including the path can't exceed 185 char
+    strPDFFileName = Application.ActiveWorkbook.Path & "/" & strDocID & " Baseline" & ".pdf"
+    
+
+    If MsgBox("Do you want to save the baseline document as a pdf?" & Chr(13) & Chr(13) & "(Saving the baseline report as: " & strPDFFileName & ") " & Len(strPDFFileName), vbOKCancel) = vbOK Then
+        ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=strPDFFileName
+    End If
+    
+    Rem ActiveSheet.ExportAsFixedFormat(Type:=xlTypePDF, Filename:= _
+        "C:\tempo.pdf", Quality:=xlQualityStandard, IncludeDocProperties:=True, _
+        IgnorePrintAreas:=False, OpenAfterPublish:=True
+    ThisWorkbook.Sheets("Introduction").Select
+Done:
+    Exit Sub
+Failure:
+    MsgBox ("Failed to write the pdf for some reason: " & Err.Description)
+End Sub
+    
