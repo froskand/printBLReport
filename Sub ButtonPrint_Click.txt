@@ -2,6 +2,7 @@ Sub ButtonPrint_Click()
     Dim strPDFFileName As String
     Dim strDocID As String
     Dim strDocRev As String
+    Dim strPath As String
     Dim fso As Object
     Dim wsBaseline As Worksheet
     Dim wsReview As Worksheet
@@ -22,8 +23,24 @@ Sub ButtonPrint_Click()
         GoTo Done
     End If
     
+    ' Get the workbook path - handle SharePoint/OneDrive URLs
+    strPath = Application.ActiveWorkbook.Path
+    
+    ' Check if file is on SharePoint/OneDrive (starts with http)
+    If Left(strPath, 4) = "http" Then
+        ' Try to get local cached path
+        On Error Resume Next
+        strPath = Environ("userprofile") & "\Documents\PL3503"
+        On Error GoTo Failure
+        
+        MsgBox "Warning: This file appears to be on SharePoint/OneDrive." & Chr(13) & Chr(13) & _
+               "The PDF will be saved to: " & strPath & Chr(13) & Chr(13) & _
+               "For best results, sync this folder to the project Sharepoint.", _
+               vbExclamation, "SharePoint File Detected"
+    End If
+    
     ' Build PDF filename
-    strPDFFileName = Application.ActiveWorkbook.Path & "\" & strDocID & " rev " & strDocRev & " BaselineReport.pdf"
+    strPDFFileName = strPath & "\PL3503 " & strDocID & " rev " & strDocRev & " BaselineReport.pdf"
     
     ' Check if file already exists
     Set fso = CreateObject("Scripting.FileSystemObject")
