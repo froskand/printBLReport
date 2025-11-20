@@ -26,24 +26,39 @@ Sub ButtonPrint_Click()
     ' Get the workbook path - handle SharePoint/OneDrive URLs
     strPath = Application.ActiveWorkbook.Path
     
+    ' Create FileSystemObject
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    
     ' Check if file is on SharePoint/OneDrive (starts with http)
     If Left(strPath, 4) = "http" Then
-        ' Try to get local cached path
-        On Error Resume Next
+        ' Set local path for SharePoint files
         strPath = Environ("userprofile") & "\Documents\PL3503"
-        On Error GoTo Failure
         
-        MsgBox "Warning: This file appears to be on SharePoint/OneDrive." & Chr(13) & Chr(13) & _
+        ' Create folder if it doesn't exist
+        If Not fso.FolderExists(strPath) Then
+            On Error Resume Next
+            fso.CreateFolder strPath
+            On Error GoTo Failure
+            
+            If Not fso.FolderExists(strPath) Then
+                MsgBox "Error: Could not create folder!" & Chr(13) & Chr(13) & _
+                       "Path: " & strPath & Chr(13) & Chr(13) & _
+                       "Please create this folder manually or choose a different location.", _
+                       vbCritical, "Folder Creation Failed"
+                GoTo Done
+            End If
+        End If
+        
+        MsgBox "This file is stored on SharePoint/OneDrive." & Chr(13) & Chr(13) & _
                "The PDF will be saved to: " & strPath & Chr(13) & Chr(13) & _
-               "For best results, sync this folder to the project Sharepoint.", _
-               vbExclamation, "SharePoint File Detected"
+               "For best results, sync this folder to the project SharePoint.", _
+               vbInformation, "SharePoint File Detected"
     End If
     
     ' Build PDF filename
     strPDFFileName = strPath & "\PL3503 " & strDocID & " rev " & strDocRev & " BaselineReport.pdf"
     
     ' Check if file already exists
-    Set fso = CreateObject("Scripting.FileSystemObject")
     If fso.FileExists(strPDFFileName) Then
         MsgBox "A file with this name already exists:" & Chr(13) & Chr(13) & _
                strPDFFileName & Chr(13) & Chr(13) & _
@@ -91,4 +106,3 @@ Failure:
     MsgBox "Failed to save PDF: " & Err.Description, vbCritical, "Error"
     ThisWorkbook.Sheets("Introduction").Select
 End Sub
-
