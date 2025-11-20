@@ -80,14 +80,9 @@ Sub ButtonPrint_Click()
         .PrintTitleRows = "$2:$4"  ' Repeat rows 2-4 as headers
     End With
     
-    ' Set up repeating rows for Review sheet
-    Set wsReview = ThisWorkbook.Worksheets("Review")
-    With wsReview.PageSetup
-        .PrintTitleRows = "$24:$25"  ' Repeat rows 24-25 as headers
-    End With
-    
+
     ' Export selected sheets to PDF
-    ThisWorkbook.Sheets(Array("Introduction", "Review", "Baseline content", "Change tracking")).Select
+    ThisWorkbook.Sheets(Array("Introduction", "Check", "Baseline content", "Change tracking")).Select
     ActiveSheet.ExportAsFixedFormat Type:=xlTypePDF, Filename:=strPDFFileName
     
     ' Verify file was created
@@ -106,3 +101,4 @@ Failure:
     MsgBox "Failed to save PDF: " & Err.Description, vbCritical, "Error"
     ThisWorkbook.Sheets("Introduction").Select
 End Sub
+
